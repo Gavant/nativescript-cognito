@@ -118,20 +118,17 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
             // @ts-ignore
             const callBack = t => {
-                console.log('cognito: in getSessionPasswordValidationData() callback');
-                invokeOnRunLoop(() => {
-                    console.log('cognito: in getSessionPasswordValidationData() runloop');
-                    if (t.error) {
-                        console.log('cognito: in getSessionPasswordValidationData() error', t.error);
-                        reject(Cognito.getErrorObject(t.error));
-                    } else {
-                        console.log('cognito: in getSessionPasswordValidationData() success', t.result);
-                        const session = t.result;
-                        const data = Cognito.getSessionObject(session);
-                        console.log('cognito: in getSessionPasswordValidationData() got session', data);
-                        resolve(data);
-                    }
-                });
+                console.log('cognito: in getSessionPasswordValidationData() callback', t);
+                if (t.error) {
+                    console.log('cognito: in getSessionPasswordValidationData() error', t.error);
+                    reject(Cognito.getErrorObject(t.error));
+                } else {
+                    console.log('cognito: in getSessionPasswordValidationData() success', t.result);
+                    const session = t.result;
+                    const data = Cognito.getSessionObject(session);
+                    console.log('cognito: in getSessionPasswordValidationData() got session', data);
+                    resolve(data);
+                }
                 return null;
             };
 
@@ -203,13 +200,15 @@ export class Cognito extends Common {
     public getCurrentUserSession() {
         return new Promise((resolve, reject) => {
             const callBack = t => {
-                invokeOnRunLoop(() => {
-                    if (t.error) reject(Cognito.getErrorObject(t.error));
-                    else {
-                        const data = Cognito.getSessionObject(t.result);
-                        resolve(data);
-                    }
-                });
+                console.log('cognito: in getCurrentUserSession() callback', t);
+                if (t.error) {
+                    console.log('cognito: in getSessionPasswordValidationData() error', t.error);
+                    reject(Cognito.getErrorObject(t.error));
+                } else {
+                    console.log('cognito: in getSessionPasswordValidationData() success', t.result);
+                    const data = Cognito.getSessionObject(t.result);
+                    resolve(data);
+                }
                 return null;
             };
 

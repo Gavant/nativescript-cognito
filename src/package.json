@@ -1,6 +1,6 @@
 {
   "name": "@gavant/nativescript-cognito",
-  "version": "1.1.4-alpha",
+  "version": "1.1.5-alpha",
   "description": "Use AWS Cognito service in android and ios through nativescipt. Clouding co. http://clouding.ca",
   "main": "cognito",
   "typings": "index.d.ts",
