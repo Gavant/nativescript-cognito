@@ -2,9 +2,19 @@ import { Common } from './cognito.common';
 import { UserSession, ErrorObject } from "./index";
 
 declare const AWSServiceConfiguration, AWSCognitoIdentityUserPoolConfiguration, AWSCognitoIdentityUserPool,
-    AWSRegionUSEast1, AWSCognitoIdentityUserAttributeType, AWSRegionType;
+    AWSRegionUSEast1, AWSCognitoIdentityUserAttributeType, AWSRegionType, CFRunLoopGetMain, CFRunLoopPerformBlock, kCFRunLoopDefaultMode, CFRunLoopWakeUp;
 
-const main_queue = dispatch_get_current_queue();
+// const main_queue = dispatch_get_current_queue();
+
+//attempt to fix issue where dispatch_async sometimes never gets executed
+//http://nuvious.com/Blog/2016/7/5/calling-dispatch_async-in-nativescript
+const invokeOnRunLoop = (function() {
+    var runloop = CFRunLoopGetMain();
+    return function(func) {
+        CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, func);
+        CFRunLoopWakeUp(runloop);
+    }
+}());
 
 export class Cognito extends Common {
     userPool = null;
@@ -46,7 +56,7 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
             // @ts-ignore
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         const { cognitoUser, userConfirmed, codeDeliveryDetails } = t.result;
@@ -67,7 +77,7 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
             // @ts-ignore
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -87,7 +97,7 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
 
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -108,11 +118,17 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
             // @ts-ignore
             const callBack = t => {
-                dispatch_async(main_queue, () => {
-                    if (t.error) reject(Cognito.getErrorObject(t.error));
-                    else {
+                console.log('cognito: in getSessionPasswordValidationData() callback');
+                invokeOnRunLoop(() => {
+                    console.log('cognito: in getSessionPasswordValidationData() runloop');
+                    if (t.error) {
+                        console.log('cognito: in getSessionPasswordValidationData() error', t.error);
+                        reject(Cognito.getErrorObject(t.error));
+                    } else {
+                        console.log('cognito: in getSessionPasswordValidationData() success', t.result);
                         const session = t.result;
                         const data = Cognito.getSessionObject(session);
+                        console.log('cognito: in getSessionPasswordValidationData() got session', data);
                         resolve(data);
                     }
                 });
@@ -130,7 +146,7 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
 
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -150,7 +166,7 @@ export class Cognito extends Common {
         return new Promise((resolve, reject) => {
 
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -169,7 +185,7 @@ export class Cognito extends Common {
         const cognitoUser = this.userPool.getUser(userId);
         return new Promise((resolve, reject) => {
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -187,7 +203,7 @@ export class Cognito extends Common {
     public getCurrentUserSession() {
         return new Promise((resolve, reject) => {
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         const data = Cognito.getSessionObject(t.result);
@@ -207,7 +223,7 @@ export class Cognito extends Common {
         const cognitoUser = this.userPool.getUser(userId);
         return new Promise((resolve, reject) => {
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         resolve(cognitoUser.username);
@@ -225,7 +241,7 @@ export class Cognito extends Common {
     public getUserDetails() {
         return new Promise((resolve, reject) => {
             const callBack = t => {
-                dispatch_async(main_queue, () => {
+                invokeOnRunLoop(() => {
                     if (t.error) reject(Cognito.getErrorObject(t.error));
                     else {
                         const data = {};
